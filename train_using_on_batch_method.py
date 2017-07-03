@@ -7,14 +7,16 @@ import cfg
 import numpy as np
 from dataset import GetDataLoaders
 
-def MyPrintDF(df):
-    table = tab.tabulate(df, headers='keys', tablefmt='psql')
-    print(table)
-    return
-    
-def HistoryToDict(h):
-    keys = h.history.keys()
-    return {key: h.history[key][-1] for key in keys}
+def Validate(dataloader, model):
+    losses = []
+    accs = []
+    for images, labels in dataloader:
+        labels = keras.utils.to_categorical(labels, cfg.num_classes)
+        images = preprocess_input(images)
+        [loss, acc] = model.test_on_batch(images, labels)
+        losses.append(loss)
+        accs.append(acc)
+    return [np.average(losses), np.average(accs)]
     
 def TrainOneEpoch(dataloader, model):
     for b, (images, labels) in enumerate(dataloader):
@@ -25,6 +27,15 @@ def TrainOneEpoch(dataloader, model):
             info = 'acc:{0:6.3f}  loss:{1:6.3f}'
             print(info.format(acc, loss))
 
+
+def TrainProcess(loader_tr, loader_val, model, epoch=1):
+    for e in range(epoch):
+        print('epoch {}'.format(e))
+        TrainOneEpoch(loader_tr, model)
+        loss, acc = Validate(loader_val, model)
+        info = 'validation result: acc:{0:6.3f}  loss:{1:6.3f}'
+        print(info.format(acc, loss))
+    
 
 def GetModel():
     base_model = InceptionResNetV2(weights='imagenet', include_top=False, pooling='avg')

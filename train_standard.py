@@ -42,10 +42,19 @@ def ShowHistory(h):
         info = 'info of {} is: {}'
         print(info.format(key, h.history[key]))
         
-def HistoryToDict(h):
-    keys = h.history.keys()
-    return {key: h.history[key][-1] for key in keys}
-        
+
+      
+def Validate(dataloader, model):
+    losses = []
+    accs = []
+    for images, labels in dataloader:
+        labels = keras.utils.to_categorical(labels, cfg.num_classes)
+        images = preprocess_input(images)
+        [loss, acc] = model.test_on_batch(images, labels)
+        losses.append(loss)
+        accs.append(acc)
+    return [np.average(losses), np.average(accs)]
+
 if __name__=='__main__':
 
     base_model = GetBaseModel()
