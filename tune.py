@@ -45,7 +45,30 @@ def HistoryToDict(h):
     keys = h.history.keys()
     return {key: h.history[key][-1] for key in keys}
         
-
+def Run(lr, reg, base_model, gen_tr, gen_val, epoch):
+    model = GetModel(base_model=base_model, reg=reg)
+    model.compile(loss='categorical_crossentropy',
+                    # optimizer=optimizers.RMSprop(lr=lr),
+                    optimizer=optimizers.SGD(lr=lr),
+                    metrics=['accuracy'])
+    
+    # early_stopping = EarlyStopping(monitor='acc', min_delta=0.05, patience=1, verbose=1)
+    
+    callbacks = [
+                    LossStopping(),
+                    AccStopping(),
+                    TerminateOnNaN(), 
+                    # early_stopping,
+                    ]
+                 
+    history = model.fit_generator(gen_tr,
+                        epochs=epoch,
+                        validation_data=gen_val,
+                        callbacks=callbacks,
+                        steps_per_epoch=len(loader_tr),
+                        validation_steps=len(loader_val),
+                        )
+    return HistoryToDict(history)
     
 if __name__=='__main__':
     iteration = 10
