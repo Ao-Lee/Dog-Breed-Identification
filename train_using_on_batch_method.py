@@ -28,15 +28,6 @@ def TrainOneEpoch(dataloader, model):
             print(info.format(acc, loss))
 
 
-def TrainProcess(loader_tr, loader_val, model, epoch=1):
-    for e in range(epoch):
-        print('epoch {}'.format(e))
-        TrainOneEpoch(loader_tr, model)
-        loss, acc = Validate(loader_val, model)
-        info = 'validation result: acc:{0:6.3f}  loss:{1:6.3f}'
-        print(info.format(acc, loss))
-    
-
 def GetModel():
     base_model = InceptionResNetV2(weights='imagenet', include_top=False, pooling='avg')
     
